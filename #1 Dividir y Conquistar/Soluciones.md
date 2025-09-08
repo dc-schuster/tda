@@ -107,7 +107,7 @@ Un arreglo es *más a la izquierda* si:
 ```cpp
 bool overloadMasALaIzquierda(vector<int> &array, size_t start, size_t end) {
     int length = end - start + 1;
-    
+  
     // Caso Base
     if (length == 2) return (array[start] > array[end]);
 
@@ -200,3 +200,89 @@ Comparamos $f(n) \ (\Theta(1))$ con $n^{\log_{c}{a}}$
 - **Caso 2:**
   ¿$\Theta(1) = O(n^{log_{2}{1}})$?. Si, pues $O(n^{log_{2}{1}}) = O(n^0) = O(1)$.
   Entonces la complejidad es $\Theta(n^{log_{2}{1}} \cdot \log \ n) = \Theta(\log \ n)$
+
+# Ejercicio 5 (Potencia Logarítmica)
+
+Queremos calcular $a^b$ en tiempo logarítmico en b. Pensemos cómo se calcula una potencia e intentemos ver como podemos usar *Divide & Conquer*.
+
+Por ejemplo, calcular $2^8$. Entonces: $2^8 = 2^4 \times 2^4$. Entonces queremos saber cuál es el resultado de $2^4$. Nuevamente usando propiedades de la multiplicación/potenciación, sabemos que $2^4 = 2^2 \times 2^2$. Vemos cómo podemos calcular una potencia grande, calculando las mas chicas.
+
+```cpp
+int potenciaLogaritmica(int base, int potencia) {
+    // Casos Base
+    if (potencia == 1) return base;
+    if (potencia == 0) return 1;
+
+    // Caso Recursivo
+    if (potencia % 2 == 0) {
+        int rec = potenciaLogaritmica(base, potencia / 2);
+        return rec * rec;
+    } else {
+        int rec = potenciaLogaritmica(base, floor(potencia / 2));
+        return rec * (rec * base);
+    }
+}
+```
+
+Calculemos la complejidad usando el *Teorema Maestro*.
+
+- $a$: Cantidad de llamados recursivos = 1
+- $c$: Factor de reducción del subproblema = 2
+- $f(n)$: $\Theta(1)$
+- $n_0$: 1
+
+Comparamos $f(n) \ (\Theta(1))$ con $n^{\log_{c}{a}}$
+
+- **Caso 1:**
+  Tomamos $\varepsilon = 0.1$. ¿$\Theta(1) = O(n^{(\log_{2}{1})-0.1})$?. No. Seguimos con el **Caso 2**.
+- **Caso 2:**
+  ¿$\Theta(1) = \Theta(n^{\log_{2}{1}})$? Si. Entonces la complejidad es:
+  $O(n^{\log_{2}{1}} \cdot \log \ n) = \Theta(\log \ n)$
+
+# Ejercicio 6
+
+Tenemos un arreglo que es estrictamente creciente hasta determinado punto, y a partir del mismo, estrictamente decreciente. Queremos encontrar el elemento de mayor valor en dicho arreglo en complejidad $O(\log \ n)$.
+
+```cpp
+int overloadMaximoMontaña(vector<int> &array, int start, int end) {
+
+    int length = end - start + 1;
+
+    // Caso Base
+    if (length == 1) return array[start];
+    if (length == 2) {
+        if (array[start] < array[end]) return array[end];
+        return array[start];
+    }
+    
+    // Caso Recursivo
+    int mid = (length / 2) - 1 + start;
+
+    if (array[mid - 1] < array[mid]) {
+        return overloadMaximoMontaña(array, mid, end);
+    } else {
+        return overloadMaximoMontaña(array, start, mid - 1);
+    }
+}
+
+int maximoMontaña(vector<int> &array) {
+    return overloadMaximoMontaña(array, 0, array.size() - 1);
+}
+```
+
+Analicemos la complejidad utilizando el *Teorema Maestro*.
+
+- $a$: Cantidad de llamados recursivos = 1
+- $c$: Factor de reducción del tamaño del subproblema = 2
+- $f(n)$: $\Theta(1)$
+- $n_0$: 1
+
+Comparamos $f(n)$ con $n^{\log_{c}{a}}$
+
+- **Caso 1:**
+  Tomamos $\varepsilon = 0.1$ ¿$\Theta(1) = O(n^{(\log_{2}{1})-0.1})$? No. Seguimos con el **Caso 2**.
+- **Caso 2:**
+  ¿$\Theta(1) = O(n^{\log_{2}{1}})$? Si. Entonces la complejidad queda:
+  $\Theta(n^{\log_{2}{1}} \cdot  \log \ n) = \Theta(\log \ n)$
+
+

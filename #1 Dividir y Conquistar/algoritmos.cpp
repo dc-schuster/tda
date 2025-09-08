@@ -67,9 +67,53 @@ int indiceEspejo(vector<int> &array) {
     return result;
 }
 
+
+// Ejercicio 5
+int potenciaLogaritmica(int base, int potencia) {
+    // Casos Base
+    if (potencia == 1) return base;
+    if (potencia == 0) return 1;
+
+    // Caso Recursivo
+    if (potencia % 2 == 0) {
+        int rec = potenciaLogaritmica(base, potencia / 2);
+        return rec * rec;
+    } else {
+        int rec = potenciaLogaritmica(base, floor(potencia / 2));
+        return rec * (rec * base);
+    }
+}
+
+
+// Ejercicio 6
+int overloadMaximoMontaña(vector<int> &array, int start, int end) {
+
+    int length = end - start + 1;
+
+    // Caso Base
+    if (length == 1) return array[start];
+    if (length == 2) {
+        if (array[start] < array[end]) return array[end];
+        return array[start];
+    }
+    
+    // Caso Recursivo
+    int mid = (length / 2) - 1 + start;
+
+    if (array[mid - 1] < array[mid]) {
+        return overloadMaximoMontaña(array, mid, end);
+    } else {
+        return overloadMaximoMontaña(array, start, mid - 1);
+    }
+}
+
+int maximoMontaña(vector<int> &array) {
+    return overloadMaximoMontaña(array, 0, array.size() - 1);
+}
+
+
 // Main
 int main() {
-
     // Ejercicio 3
     vector<int> array31 = {8, 6, 7, 4, 5, 1, 3, 2};
     vector<int> array32 = {8, 4, 7, 6, 5, 1, 3, 2};
@@ -85,4 +129,16 @@ int main() {
     const char* result4 = (indiceEspejo(array41) == 2) ? "true" : "false";
     
     printf("Ejercicio 4: %s\n", result4);
+
+    // Ejercicio 5
+    int result51 = potenciaLogaritmica(-100, 0);
+    int result52 = potenciaLogaritmica(-5, 3);
+    int result53 = potenciaLogaritmica(2, 7); 
+    int works5   = (result51 == 1) && (result52 == -125) && (result53 == 128);
+    printf("Ejercicio 5: %s\n", works5 ? "true" : "false"); 
+
+    // Ejercicio 6
+    vector<int> array61 = {-1, 3, 8, 22, 30, 22, 8, 4, 2, 1};
+    int result6 = maximoMontaña(array61);
+    printf("Ejercicio 6: %s\n", (result6 == 30) ? "true" : "false"); 
 }
