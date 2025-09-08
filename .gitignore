@@ -1,3 +1,13 @@
-./Practicas
-./Teoria
-./TP
+# Ignorar archivos sin extensión
+*
+!*/
+!*.*
+
+# Ignores
+*.o
+*.d
+.vscode/
+
+# permitir algunos sin extensión:
+!Makefile
+!LICENSE
