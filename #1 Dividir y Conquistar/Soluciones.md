@@ -254,7 +254,7 @@ int overloadMaximoMontaña(vector<int> &array, int start, int end) {
         if (array[start] < array[end]) return array[end];
         return array[start];
     }
-    
+  
     // Caso Recursivo
     int mid = (length / 2) - 1 + start;
 
@@ -285,4 +285,91 @@ Comparamos $f(n)$ con $n^{\log_{c}{a}}$
   ¿$\Theta(1) = O(n^{\log_{2}{1}})$? Si. Entonces la complejidad queda:
   $\Theta(n^{\log_{2}{1}} \cdot  \log \ n) = \Theta(\log \ n)$
 
+# Ejercicio 8 (Máxima Subsecuencia)
 
+Tenemos una secuencia de numeros, queremos encontrar una subsecuencia contigua que maximice la sumatoria.
+
+Tomamos `s = [3, -1, 4, 8, 5, 2, -7, 5]`, veamos de qué forma podemos obtener `[3, -1, 4, 8, 5, 2]`. Por empezar, más en general, tenemos 3 opciones:
+
+- **Opción 1:** La máxima subsecuencia está en la parte izquierda desde mid.
+- **Opción 2:** La máxima subsecuencia está en la parte derecha desde mid.
+- **Opción 3:** La máxima subsecuencia pasa por mid.
+
+Bien, las dos primeras opciones son simplemente recursiones desde `start` hasta `mid`, y desde `mid + 1` hasta `end`. Veamos qué hacemos en el caso en el que la máxima subsecuencia pasa por mid.
+
+Sabemos que una secuencia que pasa por mid tiene la pinta: `izq ++ [s[mid]] ++ der`. Sabemos `izq` tiene que terminar en `mid` (lógicamente no lo debe contener) y que der tiene que empezar en `s[mid + 1]`. Entonces ahora lo que queremos es conseguir la subsecuencia que maximice la suma y termine en `mid`, y ademas la subsecuencia que maximice la suma y empiece en `mid + 1`.
+
+```cpp
+int overloadMaximaSubsecuencia(vector<int> &array, int start, int end) {
+
+    size_t length = end - start + 1;
+    size_t mid = floor((length / 2)) + start - 1;
+
+    if (length == 1) return array[start];
+
+    int leftMax  = overloadMaximaSubsecuencia(array, start, mid);
+    int rightMax = overloadMaximaSubsecuencia(array, mid + 1, end);
+
+    int midLeft = INT_MIN, acc = 0;
+    for (int i = mid; i >= start; --i) {
+        acc += array[i];
+        midLeft = max(midLeft, acc);
+    }
+
+    int midRight = INT_MIN; acc = 0;
+    for (int i = mid + 1; i <= end; ++i) {
+        acc += array[i];
+        midRight = max(midRight, acc);
+    }
+
+    return std::max({leftMax, rightMax, midLeft + midRight});
+}
+
+int maximaSubsecuencia(vector<int> &array) {
+    return overloadMaximaSubsecuencia(array, 0, array.size() - 1);
+}
+```
+
+- $a$: Cantidad de llamados recursivos = 2
+- $c$: Factor de reduccion del tamaño de los subproblemas = 2
+- $f(n): $\Theta(n)$
+- $n_0$: 1
+
+Comparamos $f(n)$ con $n^{\log_{c}{a}}$
+
+- **Caso 1:**
+  Tomamos $\varepsilon = 0.1$ ¿$\Theta(n) = O(n^{(\log_{2}{2})-0.1})$? No. Seguimos con el **Caso 2**.
+- **Caso 2:**
+  ¿$\Theta(n) = \Theta(n^{\log_{2}{2}})$? Si. Entonces la complejidad es:
+  $\Theta(n^{\log_{2}{2}} \cdot \log \ n) = \Theta(n \cdot \log \ n)$
+
+# Ejercicio 9 (Potencia Sum)
+
+Tenemos un método potencia que, dada una matriz cuadrada $A$ de $4 \times 4$ y un número $n$ (potencia de 2), computa la matriz $A^n$.
+
+Nos dan una matriz cuadrada $A$ y un $n$, queremos calcular el valor de $A^1 + A^2 + A^3 + \dots + A^n$. Bien, similar al problema de *Portencia Logarítmica*, veamos como podemos modificar la expresión para que se puedan reutilizar resultados ya calculados. Supongamos que queremos calcular $A^4$. Lo reescribimos y tenemos que $A^4 = A^2 \times A^2$. Por lo tanto no necesitamos en realidad calcular $A^4$, sino tan solo $A^2$.
+
+Bien, ahora queremos *optimizar* la cantidad de sumas que hacemos. Usemos este ejemplo. Supongamos que queremos calcular $A^1 + A^2 + A^3 + \dots + A^8$
+
+$$
+A^1 + A^2 + A^3 + A^4 + A^5 + A^6 + A^7 + A^8 = \\
+(A^1 + A^2 + A^3 + A^4) + A^5 + A^6 + A^7 + A^8 = \\ 
+\text{half} = A^1 + A^2 + A^3 + A^4 \\
+\text{half} + A^5 + A^6 + A^7 + A^8 = \\
+\text{half} + A^4 \times (A^1 + A^2 + A^3 + A^4) = \\
+\text{half} + A^4 \times \text{half}
+$$
+
+```cpp
+Matriz4x4 potenciaSum(Matriz4x4 &A, int n) {
+    if (n == 1) return A;
+  
+    Matriz4x4 half = potenciaSum(A, n / 2);
+    Matriz4x4 halfPower = potencia(A, n / 2);
+    return add(half, prod(halfPower, half));
+}
+```
+
+*Más codigo en [algoritmos.cpp](https://github.com/dc-schuster/tda/blob/main/%231%20Dividir%20y%20Conquistar/algoritmos.cpp)*
+
+Se puede también evitar duplicar cálculos de potencias usando la [siguiente estrategia](https://cstheory.stackexchange.com/questions/17617/an-algorithm-to-compute-the-number-of-paths-of-length-at-most-k).
