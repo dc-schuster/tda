@@ -1,16 +1,41 @@
-# Suma Subconjuntos
+#include <cstdint>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <type_traits>
+#include <iomanip>
 
-## Idea de Algoritmo
-Tenemos un multiconjunto $C = \{c_1, \dots, c_n\}$ de numeros naturales y un natural $k$, queremos determinar si existe un subconjunto de $C$ cuya sumatoria sea $k$. En particular, queremos devolver un vector $p = (p_1, \dots, p_n)$ de valores binarios, donde si $p_i = 1$, entonces $c_i$ pertenece a la solución.
+using namespace std;
 
-Podas: 
-- Si para un estado dado, la *suma acumulada* excede el valor de k, entonces no tiene sentido seguir desarrollandola, ya que estamos trabajando con valores naturales (mayores a 0), por ende el valor de *suma acumulada* seguirá creciendo y nunca llegaremos a $k$.
-- Otra posible poda podría ser tener una matriz dep $i \times k$, donde vamos guardando el valor de verdad de si es posible llegar a una solución válida desde el índice $i$, con una suma restante $k$.
+// Utils
+template <class T>
+void printVector(const std::vector<T>& v, std::ostream& os = std::cout) {
+    os << '[';
+    const char* sep = "";
+    for (const auto& x : v) { os << sep << x; sep = ", "; }
+    os << ']';
+}
 
-## Implementación
+void printMatrix(const std::vector<std::vector<uint64_t>>& M) {
+    if (M.empty()) { std::cout << '\n'; return; }
 
-*No se implementa la segunda poda*
-```cpp
+    std::size_t w = 1;
+    for (const auto& fila : M)
+        for (uint64_t x : fila) {
+            std::size_t len = std::to_string(x).size();
+            if (len > w) w = len;
+        }
+
+    for (const auto& fila : M) {
+        for (std::size_t j = 0; j < fila.size(); ++j) {
+            std::cout << std::setw(w) << fila[j];
+            if (j + 1 < fila.size()) std::cout << ' ';
+        }
+        std::cout << '\n';
+    }
+}
+
+// Ejercicio 1 (Suma Subconjuntos)
 bool overloadSumaSubconjuntos(vector<int> &multiconjunto, int i, int &k, vector<uint8_t> &parcial) {
 
     if (k < 0) return false;
@@ -50,26 +75,10 @@ vector<uint8_t> sumaSubconjuntos(vector<int> multiconjunto, int k) {
         return parcial;
     }
 }
-```
 
-# Magi Cuadrados
 
-Un *cuadrado mágico* de orden $n$ es un cuadrado (matriz de $n \times n$) con los numeros $1, \dots, n^2$ tal que todas sus filas, columnas y las dos diagonales suman lo mismo.
 
-## Inciso A
-*¿Cuántos cuadrados habría que generar para encontrar todos los cuadrados mágicos si se utiliza una solución de fuerza bruta?*
-
-Habría que generar todos los posibles cuadrados. Veamos exactamente cómo es que se arma un cuadrado. Pongamos como ejemplo $n = 3$.
-
-Sabemos que el cuadrado tendra los siguiente numeros: $[1, 2, 3, 4, 5, 6, 7, 8, 9]$. Bien, tenemos $9$ posibles elecciones para poner en la primera fila y primera columna. Elegimos (sin sentido) el 1. Bien, ahora tenemos $8$ posibles elecciones. Rapidamente vemos que cada vez que hacemos una elección, las posibles elecciones se reducen a razón de $1$. La operación matemática que representa este comportamiento es el factorial ($!$). Por ende si tenemos $3^2$ numeros, podemos generar $(3^2)!$ cuadrados. 
-
-En conclusión, la cantidad de cuadrados a generar para encontrar todos los cuadrados mágicos si se utiliza una solución de fuerza bruta, es $\Theta((n^2)!)$
-
-## Inciso B
-
-Queremos escribir un algoritmo que use backtracking y solucione el problema. Como queremos que todas las filas, columnas y diagonales tengan el mismo valor de sumatoria, podemos mantener una variable que tenga el valor de sumatoria de una fila (podría ser columna o diagonal, pero como vamos a resolver fila por fila, mantengo el valor de sumatoria de la primera completada), luego si al terminar una columna, fila o diagonal, la sumatoria no coincide con el valor de esta variable, entonces la solución parcial no es valida.
-
-```cpp
+// Ejercicio 2 (Magi Cuadrados)
 void incrementIndexes(size_t max, uint16_t &i, uint16_t &j) {
     if (j + 1 > max) {
         j = 0;
@@ -194,18 +203,38 @@ vector<vector<uint64_t>> magiCuadrados(uint16_t n) {
     uint16_t j = 0;
     uint64_t currentSum = 0;
 
-    overloadMagiCuadrados(cuadrado, disponibles, i, j, currentSum);
+    bool result = overloadMagiCuadrados(cuadrado, disponibles, i, j, currentSum);
+
+    printf("MagiCuadrado (%d):\n", n);
+    printMatrix(cuadrado);
+
     return cuadrado;
 }
-```
 
-## Inciso D
-Sea $k$ el numero mágico. Tenemos los numeros del $1$ al $n^2$. Por lo tanto la suma total de todos los valores en el arreglo $[1, \dots, n^2]$ es de $\sum^{n^2}_{i = 1}i$. Sabemos que podemos reescribir una sumatoria de la forma $\sum^{m}_{i = 1}i$ como $\frac{m \ (m \ + \ 1)}{2}$. Por lo tanto si tomamos $m = n^2$, obtenemos:
--  $\sum^{n^2}_{i = 1}i = \frac{n^2 \ (n^2 \ + \ 1)}{2}$
 
-Bien, entonces para un cuadrado mágico de $n \times n$, sabemos que la sumatoria de todos sus valores es $\frac{n^2 \ (n^2 \ + \ 1)}{2}$, que en particular equivale a $n \cdot k$ (ya que tenemos $n$ filas y cada fila suma $k$).
 
-El desarrollo queda:
+int main() {
+    // Ejercicio 1 (Suma Subconjuntos)
+    vector<int> C1 = {6,12,6}; int k1 = 12;
+    auto M1 = sumaSubconjuntos(C1, k1);
+    int s1 = 0; for (size_t i=0;i<C1.size() && i<M1.size();++i) if (M1[i]) s1 += C1[i];
+    const bool r1 = (s1 == k1);
 
-- $\sum^{n^2}_{i = 1}i = \frac{n^2 \ (n^2 \ + \ 1)}{2} = n \cdot k$
-- $k = \frac{n^2 \ (n^2 \ + \ 1)}{2n} = \frac{n^3 + \ n}{2}$
+    vector<int> C2 = {3,34,4,12,5,2}; int k2 = 9;
+    auto M2 = sumaSubconjuntos(C2, k2);
+    int s2 = 0; for (size_t i=0;i<C2.size() && i<M2.size();++i) if (M2[i]) s2 += C2[i];
+    const bool r2 = (s2 == k2);
+
+    vector<int> C3 = {2,4,6}; int k3 = 5;
+    auto M3 = sumaSubconjuntos(C3, k3);
+    int s3 = 0; for (size_t i=0;i<C3.size() && i<M3.size();++i) if (M3[i]) s3 += C3[i];
+    const int r3 = (s3 != k3);
+
+    printf("(Ejercicio 1):  %s\n", (r1 && r2 && r3) ? "true" : "false");
+
+    // Ejercicio 2 (Magi Cuadrados)
+    // magiCuadrados(3);
+    // magiCuadrados(4);
+    
+    return 0;
+}
