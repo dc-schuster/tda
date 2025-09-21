@@ -1,10 +1,10 @@
 #include <cstdint>
 #include <vector>
-#include <iostream>
 #include <string>
-#include <type_traits>
 #include <iomanip>
-
+#include <iostream>
+#include <type_traits>
+#include <bits/stdc++.h>
 using namespace std;
 
 // Utils
@@ -211,6 +211,72 @@ vector<vector<uint64_t>> magiCuadrados(uint16_t n) {
     return cuadrado;
 }
 
+
+// Ejercicio 3 (Maxi Subconjunto)
+int sumatoriaConIndices(vector<vector<int>> &matriz, vector<uint64_t> &indices) {
+    size_t i = 0;
+    size_t j = 0;
+    int sumatoria = 0;
+
+    for (int indiceI = 0; indiceI < indices.size(); indiceI++) {
+        for (int indiceJ = 0; indiceJ < indices.size(); indiceJ++) {
+            sumatoria += matriz[indices[indiceI]][indices[indiceJ]];
+        }
+    }
+    return sumatoria;
+}
+
+void overloadMaxiSubconjunto(
+    vector<vector<int>> &matriz,
+    vector<size_t> &solucionParcial,
+    vector<size_t> &mejorSolucion,
+    int &mejorSumatoria,
+    size_t indiceStart,
+    size_t &k
+) {
+
+    // Si indiceStart es igual a n pero la solucionParcial no tiene k elementos, no es una solución válida.
+    if (indiceStart == matriz.size() && solucionParcial.size() != k) return;
+
+    // Si ya elegimos k elementos, calculamos la sumatoria.
+    if (solucionParcial.size() == k) {
+        int sumatoria = sumatoriaConIndices(matriz, solucionParcial);
+        if (sumatoria > mejorSumatoria) {
+            mejorSumatoria = sumatoria;
+            mejorSolucion = solucionParcial;
+        }
+        return;
+    }
+
+    // Para cada posible indice, pruebo usarlo o no usarlo.
+    for (size_t indice = indiceStart; indice < matriz.size(); indice++) {
+        // Uso el indice
+        solucionParcial.push_back(indice);
+        // Hacemos recursion
+        overloadMaxiSubconjunto(matriz, solucionParcial, mejorSolucion, mejorSumatoria, indice + 1, k);
+
+        // Lo más intuitivo es hacer ahora, algo como:
+        // No lo uso
+        // solucionParcial.pop_back();
+        // overloadMaxiSubconjunto(matriz, solucionParcial, mejorSolucion, mejorSumatoria, indice + 1, k);
+
+        // Sin embargo, en la siguiente iteración vamos a llamar a overloadMaxiSubconjunto con indice = indice + 1, sin haber usado el indice actual.
+        // Entonces para evitar estados repetidos que hagan que nuestra función tarde más, dejamos comentado ese caso 'No lo uso'.
+
+        solucionParcial.pop_back();
+    }    
+}
+
+vector<uint64_t> maxiSubconjunto(vector<vector<int>> &matriz, size_t &k) {
+
+    vector<size_t> solucionParcial;
+    vector<size_t> mejorSolucion;
+    int mejorSumatoria = 0;
+
+    overloadMaxiSubconjunto(matriz, solucionParcial, mejorSolucion, mejorSumatoria, 0, k);
+
+    return mejorSolucion;
+}
 
 
 int main() {
