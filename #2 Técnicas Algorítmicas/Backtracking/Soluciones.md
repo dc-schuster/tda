@@ -55,6 +55,8 @@ vector<uint8_t> sumaSubconjuntos(vector<int> multiconjunto, int k) {
 }
 ```
 
+---
+
 # Magi Cuadrados
 
 Un *cuadrado mágico* de orden $n$ es un cuadrado (matriz de $n \times n$) con los numeros $1, \dots, n^2$ tal que todas sus filas, columnas y las dos diagonales suman lo mismo.
@@ -216,6 +218,8 @@ El desarrollo queda:
 - $\sum^{n^2}_{i = 1}i = \frac{n^2 \ (n^2 \ + \ 1)}{2} = n \cdot k$
 - $k = \frac{n^2 \ (n^2 \ + \ 1)}{2n} = \frac{n^3 + \ n}{2}$
 
+---
+
 # Maxi Subconjunto
 
 Tenemos una matriz simétrica M de $n \times n$ números naturales, y un nuḿero $k$, queremos encontrar un subconjunto $I$ de ${1, \dots, n}$ con $|I| = k$ que maximice $\sum_{i, j \in I} M_{ij}$.
@@ -341,3 +345,137 @@ $\Theta(2^n)$
 *Nota: $\Theta(k^2)$ es despreciable frente a $\Theta(2^n)$*.
 
 En conclusión, la complejidad de nuestro algoritmo es $\Theta(2^n)$.
+
+
+---
+
+# Ruta Mínima
+
+Dada una matriz $D$ de $n \times n$ números naturales, queremos encontrar una permutación de $\{1, \dots, n\}$ que minimice $D_{\pi(n), \pi(0)} + \sum_{i=0}^{n-2}D_{\pi(i), \pi(i+1)}$.
+
+Por ejemplo, para esta matriz:
+$$
+M=\begin{pmatrix}
+0 & 1 & 10 & 10 \\
+10 & 0 & 3 & 15 \\
+21 & 17 & 0 & 2 \\
+3 & 22 & 30 & 0
+\end{pmatrix}
+$$
+
+la mejor permutación es $\pi(i)$. Esto es así porque la forma más barata de ir desde 0 hasta n, y luego volver, es:
+- $D[0][1] = 1$ (Vamos desde 0 hasta 1)
+- $D[1][2] = 3$ (Vamos desde 1 hasta 2)
+- $D[2][3] = 2$ (Vamos desde 2 hasta 3)
+- $D[3][0] = 3$ (Vamos desde 3 hasta 0)
+
+El costo total termina siendo $9$, y en particular es el mínimo que podemos conseguir.
+
+# Inciso A
+Arranco en la posición 0, tengo que ir de la forma más barata posible hasta $|D| - 1$. Por ejemplo, para una matriz de $4 \times 4$, si arranco desde la posición 0, tengo 3 opciones.
+- Voy de 0 a 1.
+- Voy de 0 a 2.
+- Voy de 0 a 3.
+
+Supongamos que elegimos ir al 2. Ahora tenemos 2 opciones. La opción de ir del 2 al 0 la descartamos, ya que si volvemos al 0, ¿vamos a volver al 2 de nuevo?
+Entonces nuestras opciones son:
+- Voy de 2 a 1.
+- Voy de 2 a 3. 
+
+Supongamos que elegimos ir al 1. Ahora tenemos una última opcion, que es la de ir de 1 a 3.
+
+*Nota: Se pide que la permutación sea una función biyectiva, por ende tenemos que realizar $n$ pasos, y en el último indice de la permutación, debe estar el valor $n-1$*.
+
+```cpp
+void overloadRutaMinima(
+    vector<vector<uint64_t>> &matriz, 
+    vector<size_t> disponibles,
+    vector<signed long long> &solucionParcial,
+    signed long long &sumatoriaParcial,
+    vector<signed long long> &mejorSolucion,
+    signed long long &minimaSumatoria
+) {
+    
+    // Poda. Si la sumatoria actual es mayor o igual a la sumatoria de la mejor solución,
+    // no vale la pena seguir por esta rama. Cortamos.
+    if (sumatoriaParcial >= minimaSumatoria) {return;}
+
+    // Calculamos la sumatoria de la solucion parcial
+    if (disponibles.empty()) {
+        uint64_t total = sumatoriaParcial + matriz[solucionParcial.back()][matriz.size() - 1];
+
+        if (total < minimaSumatoria) {
+            mejorSolucion = solucionParcial;
+            mejorSolucion.push_back(matriz.size() - 1);
+            minimaSumatoria = total;
+        }
+        return;
+    }
+
+    // Probamos "todas" las combinaciones
+    for (size_t index = 0; index < disponibles.size(); index++) {
+        size_t disponible = disponibles[index];
+        uint64_t costo = matriz[solucionParcial.back()][disponible];
+
+        sumatoriaParcial += costo;
+        solucionParcial.push_back(disponible);
+
+        size_t last = disponibles.size() - 1;
+        swap(disponibles[index], disponibles[last]);
+        disponibles.pop_back();
+
+        overloadRutaMinima(
+            matriz, 
+            disponibles,
+            solucionParcial, 
+            sumatoriaParcial, 
+            mejorSolucion, 
+            minimaSumatoria
+        );
+
+        disponibles.push_back(disponible);
+        swap(disponibles[index], disponibles[last]);
+
+        solucionParcial.pop_back();
+        sumatoriaParcial -= costo;    
+    }
+
+    // Ya la mejor solución fue calculada y está en mejorSolucion
+    return;
+}
+
+vector<signed long long> rutaMinima(vector<vector<uint64_t>> &matriz) {
+    vector<size_t> disponibles = {};
+    for (size_t disponible = 1; disponible < matriz.size() - 1; disponible++) {
+        disponibles.push_back(disponible);
+    }
+
+    signed long long sumatoriaParcial = 0;
+    vector<signed long long> solucionParcial = {0};
+
+    vector<signed long long> mejorSolucion;
+    signed long long minimaSumatoria = INF;
+
+    overloadRutaMinima(
+        matriz, 
+        disponibles,
+        solucionParcial, 
+        sumatoriaParcial,
+        mejorSolucion, 
+        minimaSumatoria
+    );
+
+    return mejorSolucion;
+}
+```
+
+# Inciso B
+Justificación idéntica a [esta](./Extras.md#demostración-complejidad-ii).
+En conclusión, la complejidad de nuestro algoritmo es $\Theta(n!)$.
+
+*En cuanto a la complejidad espacial, no lo calculamos ya que se ve claramente que es despreciable. No realizamos copias de las variables por cada llamado.*
+
+# Inciso C
+
+Ya tenemos implementadas la poda:
+- Si la sumatoria actual es mayor o igual a la sumatoria de la mejor solución, no vale la pena seguir por esta rama, ya que no hay valores en la matriz negativos, que puedan reducir el costo de la ruta.

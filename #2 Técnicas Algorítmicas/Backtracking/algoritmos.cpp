@@ -3,11 +3,14 @@
 #include <string>
 #include <iomanip>
 #include <iostream>
+#include <functional>
 #include <type_traits>
 #include <bits/stdc++.h>
 using namespace std;
 
 // Utils
+signed long long int INF = numeric_limits<double>::infinity() / 2;
+
 template <class T>
 void printVector(const std::vector<T>& v, std::ostream& os = std::cout) {
     os << '[';
@@ -279,6 +282,88 @@ vector<uint64_t> maxiSubconjunto(vector<vector<int>> &matriz, size_t &k) {
 }
 
 
+// Ejercicio 4 (Ruta Mínima)
+void overloadRutaMinima(
+    vector<vector<uint64_t>> &matriz, 
+    vector<size_t> disponibles,
+    vector<signed long long> &solucionParcial,
+    signed long long &sumatoriaParcial,
+    vector<signed long long> &mejorSolucion,
+    signed long long &minimaSumatoria
+) {
+    
+    // Poda. Si la sumatoria actual es mayor o igual a la sumatoria de la mejor solución,
+    // no vale la pena seguir por esta rama. Cortamos.
+    if (sumatoriaParcial >= minimaSumatoria) {return;}
+
+    // Calculamos la sumatoria de la solucion parcial
+    if (disponibles.empty()) {
+        uint64_t total = sumatoriaParcial + matriz[solucionParcial.back()][matriz.size() - 1];
+
+        if (total < minimaSumatoria) {
+            mejorSolucion = solucionParcial;
+            mejorSolucion.push_back(matriz.size() - 1);
+            minimaSumatoria = total;
+        }
+        return;
+    }
+
+    // Probamos "todas" las combinaciones
+    for (size_t index = 0; index < disponibles.size(); index++) {
+        size_t disponible = disponibles[index];
+        uint64_t costo = matriz[solucionParcial.back()][disponible];
+
+        sumatoriaParcial += costo;
+        solucionParcial.push_back(disponible);
+
+        size_t last = disponibles.size() - 1;
+        swap(disponibles[index], disponibles[last]);
+        disponibles.pop_back();
+
+        overloadRutaMinima(
+            matriz, 
+            disponibles,
+            solucionParcial, 
+            sumatoriaParcial, 
+            mejorSolucion, 
+            minimaSumatoria
+        );
+
+        disponibles.push_back(disponible);
+        swap(disponibles[index], disponibles[last]);
+
+        solucionParcial.pop_back();
+        sumatoriaParcial -= costo;    
+    }
+
+    // Ya la mejor solución fue calculada y está en mejorSolucion
+    return;
+}
+
+vector<signed long long> rutaMinima(vector<vector<uint64_t>> &matriz) {
+    vector<size_t> disponibles = {};
+    for (size_t disponible = 1; disponible < matriz.size() - 1; disponible++) {
+        disponibles.push_back(disponible);
+    }
+
+    signed long long sumatoriaParcial = 0;
+    vector<signed long long> solucionParcial = {0};
+
+    vector<signed long long> mejorSolucion;
+    signed long long minimaSumatoria = INF;
+
+    overloadRutaMinima(
+        matriz, 
+        disponibles,
+        solucionParcial, 
+        sumatoriaParcial,
+        mejorSolucion, 
+        minimaSumatoria
+    );
+
+    return mejorSolucion;
+}
+
 int main() {
     // Ejercicio 1 (Suma Subconjuntos)
     vector<int> C1 = {6,12,6}; int k1 = 12;
@@ -301,6 +386,15 @@ int main() {
     // Ejercicio 2 (Magi Cuadrados)
     // magiCuadrados(3);
     // magiCuadrados(4);
+
+    // Ejercicio 4 (Ruta Mínima)
+    vector<vector<uint64_t>> matriz4 = {
+        {0, 1, 10, 10},
+        {10, 0, 3, 15},
+        {21, 17, 0, 2},
+        {3, 22, 30, 0}
+    };
+    vector<signed long long> result4 = rutaMinima(matriz4);
     
     return 0;
 }
