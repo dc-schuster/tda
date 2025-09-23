@@ -251,3 +251,139 @@ Luego `dp[n+1][Competir]` almacena el valor correcto.
 
 Demostramos que `dp[n+1][a]` almacena el valor correcto para toda actividad. Luego, como `vacaciones()` devuelve el mínimo entre `dp[n+1][Descansar]`, `dp[n+1][Gimnasio]` y `dp[n+1][Competir]`, entonces estamos devolviendo el mínimo entre 3 valores correctos. Por lo tanto nuestro algoritmo es correcto.
 
+
+# Opti Pago
+
+## Inciso A
+$$
+Op(B, c) =
+\begin{cases}
+(0, 0) & c \le 0 \quad \\
+(\infty, \infty) & c \gt 0 \ \land |B| = 0 \quad \\
+min_{op}((B[0], 1) + Op(B \ \backslash \ B[0], c - B[0]), Op(B \ \backslash \ B[0], c)) & |B| \gt 1 
+\end{cases}
+$$
+
+
+## Inciso B
+```cpp
+struct optiData {
+    int cantBilletes;
+    int cantidadPagada;
+};
+
+optiData minOpti(optiData opti1, optiData opti2) {
+    if (opti1.cantidadPagada < opti2.cantidadPagada) return opti1;
+    if (opti1.cantidadPagada > opti2.cantidadPagada) return opti2;
+    if (opti1.cantBilletes < opti2.cantBilletes)     return opti1;
+    if (opti1.cantBilletes > opti2.cantBilletes)     return opti2;
+    return opti1;
+}
+
+optiData optiPago(vector<int> &billetes, int costo, int actual) {
+    // Queremos devolver la mejor solución utilizando los billetes de 0 a i (?)
+
+    // Tenemos dos posibilidades:
+    //  - usamos el billete b_n, reduciendo el costo
+    //  - no usamos el billete b_n, no reducimos el costo
+
+    optiData base = {0, 0};
+
+    if (costo <= 0) return base;
+
+    if (costo > 0 && actual == billetes.size()) {
+        // No hay solución posible, devolvemos INF para que no sea electo luego en el min.
+        base.cantBilletes = INF;
+        base.cantidadPagada = INF;
+        return base;
+    }
+
+    // Calculamos el resultado utilizando el billete
+    optiData resultadoUsando = optiPago(billetes, costo - billetes[actual], actual + 1);
+    resultadoUsando.cantBilletes += 1;
+    resultadoUsando.cantidadPagada += billetes[actual];
+
+    // Calculamos el resultado sin usar el billete
+    optiData resultadoSinUsar = optiPago(billetes, costo, actual + 1);
+
+    return minOpti(resultadoUsando, resultadoSinUsar);
+}
+```
+
+Demostración de complejidad idéntica a [esta](../../Extras/complejidades.md#demostración-complejidad-iii).
+
+## Inciso C
+
+Nuestra función `optiPago(vector<int> &billetes, int costo, int actual)` recibe esos tres parámetros. Ocurre superposición de problemas cuando la función recibe dos veces, o más, un llamado con exactamente los mismos parámetros. `billetes` no se modifica, `costo` y `actual` sí, sin embargo podemos llegar a `actual` con el mismo `costo`, y ahí ocurre la superposición de problemas.
+
+## Inciso D
+
+Definimos una matriz $dp$ de $(costo + 1) \times (|billetes| + 1)$. Luego para un costo dado `c` y los primeros `n` billetes, sabemos la mejor solución accediendo a `dp[c][n]`.
+
+## Inciso E
+
+```cpp
+struct optiData {
+    int cantBilletes;
+    int cantidadPagada;
+    bool init;
+};
+
+optiData minOpti(optiData opti1, optiData opti2) {
+    if (opti1.cantidadPagada < opti2.cantidadPagada) return opti1;
+    if (opti1.cantidadPagada > opti2.cantidadPagada) return opti2;
+    if (opti1.cantBilletes < opti2.cantBilletes)     return opti1;
+    if (opti1.cantBilletes > opti2.cantBilletes)     return opti2;
+    return opti1;
+}
+
+optiData optiPago(vector<vector<optiData>> &dp, vector<int> &billetes, int costo, int actual) {
+    // dp es una matriz inicializada en optiData{INF, INF} para todo indice.
+
+    // Queremos devolver la mejor solución utilizando los billetes de 0 a i (?)
+
+    // Tenemos dos posibilidades:
+    //  - usamos el billete b_n, reduciendo el costo
+    //  - no usamos el billete b_n, no reducimos el costo
+
+    if (dp[costo][actual].init) return dp[costo][actual];
+
+    optiData base = {0, 0, true};
+
+    if (costo > 0 && actual == billetes.size()) {
+        // No hay solución posible, devolvemos INF para que no sea electo luego en el min.
+        base.cantBilletes = INF;
+        base.cantidadPagada = INF;
+        dp[costo][actual] = base;
+        return base;
+    }
+
+    if (costo == 0) {
+        dp[costo][actual] = base;
+        return base;
+    }
+
+    if (actual >= billetes.size()) {
+        printf("Actual: %d\nSize: %d\nCosto: %d\n", actual, billetes.size(), costo);
+    }
+
+    // Calculamos el resultado utilizando el billete
+
+    int nuevoCosto = costo - billetes[actual];
+    if (nuevoCosto < 0) nuevoCosto = 0;
+    optiData resultadoUsando = optiPago(dp, billetes, nuevoCosto, actual + 1);
+    resultadoUsando.cantBilletes += 1;
+    resultadoUsando.cantidadPagada += billetes[actual];
+    resultadoUsando.init = true;
+
+    // Calculamos el resultado sin usar el billete
+    optiData resultadoSinUsar = optiPago(dp, billetes, costo, actual + 1);
+    resultadoSinUsar.init = true;
+
+    optiData result = minOpti(resultadoUsando, resultadoSinUsar);
+
+    dp[costo][actual] = result;
+
+    return result;
+}
+```

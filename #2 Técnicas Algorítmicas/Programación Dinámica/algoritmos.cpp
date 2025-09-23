@@ -93,3 +93,69 @@ int vacaciones(uint64_t n, const vector<bool> &gimnasio, const vector<bool> &com
         minDescansos(dp, n, Competir,  gimnasio, competir)
     });
 }
+
+
+// Ejercicio 12
+struct optiData {
+    int cantBilletes;
+    int cantidadPagada;
+    bool init;
+};
+
+optiData minOpti(optiData opti1, optiData opti2) {
+    if (opti1.cantidadPagada < opti2.cantidadPagada) return opti1;
+    if (opti1.cantidadPagada > opti2.cantidadPagada) return opti2;
+    if (opti1.cantBilletes < opti2.cantBilletes)     return opti1;
+    if (opti1.cantBilletes > opti2.cantBilletes)     return opti2;
+    return opti1;
+}
+
+optiData optiPago(vector<vector<optiData>> &dp, vector<int> &billetes, int costo, int actual) {
+    // dp es una matriz inicializada en optiData{INF, INF} para todo indice.
+
+    // Queremos devolver la mejor solución utilizando los billetes de 0 a i (?)
+
+    // Tenemos dos posibilidades:
+    //  - usamos el billete b_n, reduciendo el costo
+    //  - no usamos el billete b_n, no reducimos el costo
+
+    if (dp[costo][actual].init) return dp[costo][actual];
+
+    optiData base = {0, 0, true};
+
+    if (costo > 0 && actual == billetes.size()) {
+        // No hay solución posible, devolvemos INF para que no sea electo luego en el min.
+        base.cantBilletes = INF;
+        base.cantidadPagada = INF;
+        dp[costo][actual] = base;
+        return base;
+    }
+
+    if (costo == 0) {
+        dp[costo][actual] = base;
+        return base;
+    }
+
+    if (actual >= billetes.size()) {
+        printf("Actual: %d\nSize: %d\nCosto: %d\n", actual, billetes.size(), costo);
+    }
+
+    // Calculamos el resultado utilizando el billete
+
+    int nuevoCosto = costo - billetes[actual];
+    if (nuevoCosto < 0) nuevoCosto = 0;
+    optiData resultadoUsando = optiPago(dp, billetes, nuevoCosto, actual + 1);
+    resultadoUsando.cantBilletes += 1;
+    resultadoUsando.cantidadPagada += billetes[actual];
+    resultadoUsando.init = true;
+
+    // Calculamos el resultado sin usar el billete
+    optiData resultadoSinUsar = optiPago(dp, billetes, costo, actual + 1);
+    resultadoSinUsar.init = true;
+
+    optiData result = minOpti(resultadoUsando, resultadoSinUsar);
+
+    dp[costo][actual] = result;
+
+    return result;
+}
