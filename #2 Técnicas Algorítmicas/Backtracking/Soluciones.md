@@ -337,7 +337,7 @@ $\Theta(k^2)$
     }  
 }
 ```
-Justificación idéntica a [esta](./Extras.md#demostración-complejidad-i).
+Justificación idéntica a [esta](../../Extras/complejidades.md#demostración-complejidad-i).
 $\Theta(2^n)$
 
 ---
@@ -470,7 +470,7 @@ vector<signed long long> rutaMinima(vector<vector<uint64_t>> &matriz) {
 ```
 
 # Inciso B
-Justificación idéntica a [esta](./Extras.md#demostración-complejidad-ii).
+Justificación idéntica a [esta](../../Extras/complejidades.md#demostración-complejidad-ii).
 En conclusión, la complejidad de nuestro algoritmo es $\Theta(n!)$.
 
 *En cuanto a la complejidad espacial, no lo calculamos ya que se ve claramente que es despreciable. No realizamos copias de las variables por cada llamado.*
