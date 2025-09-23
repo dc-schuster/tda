@@ -187,3 +187,68 @@ Entonces $T(n+1) \le 1 + 3n!$, y como $1 + 3n! \le 3n! \cdot (n + 1) - n$, por t
 Queda probar el Caso Inductivo $\checkmark$
 
 ---
+
+# Demostración Complejidad (III)
+```cpp
+int f(n) {
+    if (n == 0) return 0;  
+    return min(f(n-1), f(n-1));
+}
+
+```
+
+Sea $T(n)$ el tiempo de ejecución de $f(n)$. Si $n = 0$, $T(n) = 1$.
+
+Luego, si $n \gt 0$, realizamos dos llamados recursivos identicos en $n$. Por lo tanto definimos
+
+$$
+T(n) =
+\begin{cases}
+1 & n = 0 \quad \\
+1 + 2T(n-1) & n \gt 0
+\end{cases}
+$$
+
+Veamos una serie de términos:
+- $T(0) = 1$
+- $T(1) = 3$
+- $T(2) = 7$
+- $T(3) = 15$
+- $T(4) = 31$
+- $T(5) = 63$
+- $T(6) = 127$
+- $T(7) = 255$
+
+Bien... asumimos que la complejidad es $\Theta(2^n)$
+
+|   $2^n$     | Para llegar a $T(n)$ |
+|    :-:      |        :-:           |
+| $2^0 = 1$   |     $T(0) = 1$       | 
+| $2^1 = 2$   |     $T(1) = 3$       |
+| $2^2 = 4$   |     $T(2) = 7$       |
+| $2^3 = 8$   |     $T(3) = 15$      |
+| $2^4 = 16$  |     $T(4) = 31$      |
+| $2^5 = 32$  |     $T(5) = 63$      |
+| $2^6 = 64$  |     $T(6) = 127$     |
+| $2^7 = 128$ |     $T(7) = 255$     |
+
+Parece que $T(n) = 2^{n+1} - 1 \ \forall \ n \ge 0$ 
+
+Lo probamos por inducción
+
+Definimos $P(n) \equiv T(n) = 2^{n+1} - 1$
+
+Sea $P(n)$ nuestra $HI$, queremos demostrar que $P(n+1)$ es verdadero.
+
+$P(n+1) \equiv T(n+1) = 2^{(n+1)+1} - 1$
+
+$$
+T(n+1) = 2^{(n+1)+1} - 1 \\
+1 + 2 \cdot \underbrace{T(n)}_{HI: \ 2^{n+1} - 1} = 2^{n+2} - 1 \\
+1 + 2 \cdot (2^{n+1} - 1) = 2^{n+2} - 1 \\
+1 + 2^{n+2} - 2 = 2^{n+2} - 1 \\
+-1 + 2^{n+2} = 2^{n+2} - 1 \\
+2^{n+2} = 2^{n+2} \\
+\checkmark
+$$
+
