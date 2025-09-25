@@ -387,3 +387,164 @@ optiData optiPago(vector<vector<optiData>> &dp, vector<int> &billetes, int costo
     return result;
 }
 ```
+
+
+# Astro Trade
+
+## Inciso B
+
+$$
+at(A, c, d) =
+\begin{cases}
+-\infty & (c < 0) \ \lor \ (c > d) \quad \\
+-\infty & d == 0 \land c > 0 \quad \\
+0 & 
+max(\underbrace{at(A, c - 1, d - 1) - A[d]}_{\text{comprar el dia d}}, \ \underbrace{at(A, c + 1, d - 1) + A[d]}_{\text{vender el dia d}}, \ \underbrace{at(A, c, d - 1))}_{\text{no hacer nada}} & c \gt 0 \ \land |B| = 0 \quad
+\end{cases}
+$$
+
+
+    if (c < 0 || c > d) return -INF;
+    
+    if (d == 0 && c > 0) return -INF;
+    if (d == 0 && c == 0) return 0;
+
+
+
+## Inciso C
+
+La máxima ganancia posible si el día $d$ tengo $c$ asteroides.
+
+## Inciso D
+
+```cpp
+struct astro {
+    bool init;
+    int ganancia;
+};
+
+int astroTrade(vector<vector<astro>> &dp, vector<int> A, int c, int d) {
+    // dp es una matriz de floor(|A| / 2) × |A| (asumiendo que |A| = días)
+
+    // No puedo tener asteroides negativos.
+    // No puedo comprar mas de un asteroide por día
+    // No puedo estar en un día negativo
+    if (c < 0 || c > d || d < 0 || c > A.size() / 2) return -INF;
+    
+    // No puedo tener asteroides el primer dia
+    if (d == 0) return (c == 0 ? 0 : -INF); 
+
+    if (dp[c][d].init) return dp[c][d].ganancia;
+
+    int comprar = astroTrade(dp, A, c - 1, d - 1) - A[d - 1];
+    int vender  = astroTrade(dp, A, c + 1, d - 1) + A[d - 1];
+    int nada    = astroTrade(dp, A, c, d - 1);
+
+    astro result = {true, max({comprar, vender, nada})}; 
+    dp[c][d] = result;
+
+    return result.ganancia;
+}
+
+int main() {
+    vector<int> A = {3, 2, 5, 6};
+    
+    vector<vector<astro>> dp(A.size() / 2 + 1, vector<astro>(A.size() + 1, {false, 0}));
+
+    int result = astroTrade(dp, A, 0, A.size());
+
+    printf("Resultado: %d\n", result);
+}
+```
+
+
+# Fire
+
+Queremos salvar artículos. Queremos maximizar el valor obtenido.
+
+Cada artículo tiene:
+- el tiempo que tarda en salvarse ($t$).
+- el tiempo a partir del cual el objeto se quema ($d$).
+- el valor del artículo ($p$).
+
+Notemos que un elemento no se puede salvar en el momento que se está quemando, por lo tanto si queremos salvar un elemento $i$, tenemos que hacerlo (como tarde) en $d_i - t_i - 1$. Dicho esto, vamos a ordenar los items en base al tiempo en el cual expiran, en orden ascendente. Es decir, los que están por expirar ahora, son la prioridad.
+
+Definimos:
+```cpp
+struct item {
+    int id;
+    int tarda;
+    int expira;
+    int valor;
+}
+```
+
+Sea:
+- $I$ la lista de artículos, ordenados en orden ascendente por tiempo de expiración, y por tiempo que toma en salvar (para desempatar).
+- $N$ la cantidad de artículos.
+- $D_{max}$ el máximo de los tiempos $d$ de todos los $N$ artículos.
+```cpp
+struct solucionFire {
+    int valor;
+    vector<item*> items;
+    bool init;
+}
+```
+
+Definimos:
+$$
+fire(I, n, t_a) =
+\begin{cases}
+max\{fire(I, n+1, t_a + I[n].tarda) + I[n].valor, fire(I, n+1, t_a)\} & t_a \leq I[n].expira - I[n].tarda - 1 \quad \\
+fire(I, n+1, t_a) & t_a \le I[n].expira - I[n].tarda - 1 \quad \\
+\end{cases}
+$$
+
+
+```cpp
+struct item {
+    int id;
+    int tarda;
+    int expira;
+    int valor;
+};
+ 
+struct solucionFire {
+    int valor;
+    vector<item*> items;
+    bool init;
+};
+ 
+bool itemComparator(const item& a, const item& b) {
+    if (a.expira != b.expira) return a.expira < b.expira;
+    if (a.tarda  != b.tarda ) return a.tarda  < b.tarda;
+    return a.valor > b.valor;
+}
+ 
+solucionFire fire(vector<vector<solucionFire>> &dp, uint64_t n, int t_a, int &d_max, vector<item> &items) {
+ 
+    solucionFire base = {0, {}, true};
+ 
+    if (n >= items.size()) return base;
+    if (t_a > d_max) return base;
+ 
+    if (dp[n][t_a].init) return dp[n][t_a];
+ 
+    // No salvo elemento
+    solucionFire noSalvoElemento = fire(dp, n + 1, t_a, d_max, items);
+    dp[n][t_a] = noSalvoElemento;
+ 
+ 
+    // Salvo elemento.
+    if (t_a <= items[n].expira - items[n].tarda - 1) {
+        solucionFire salvoElemento = fire(dp, n + 1, t_a + items[n].tarda, d_max, items);
+        salvoElemento.init = true;
+        salvoElemento.valor += items[n].valor;
+        salvoElemento.items.push_back(&items[n]);
+ 
+        dp[n][t_a] = (salvoElemento.valor >= noSalvoElemento.valor ? salvoElemento : noSalvoElemento);
+    }
+ 
+    return dp[n][t_a];
+}
+```

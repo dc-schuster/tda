@@ -1,4 +1,3 @@
-#include <map>
 #include <vector>
 #include <cstdint>
 #include <bits/stdc++.h>
@@ -6,6 +5,14 @@ using namespace std;
 
 // Utils
 signed long long int INF = 100000000;
+
+template <class T>
+void printVector(const std::vector<T>& v, std::ostream& os = std::cout) {
+    os << '[';
+    const char* sep = "";
+    for (const auto& x : v) { os << sep << x; sep = ", "; }
+    os << ']';
+}
 
 void printMatrix(const std::vector<std::vector<uint64_t>>& M) {
     if (M.empty()) { std::cout << '\n'; return; }
@@ -158,4 +165,83 @@ optiData optiPago(vector<vector<optiData>> &dp, vector<int> &billetes, int costo
     dp[costo][actual] = result;
 
     return result;
+}
+
+
+// Ejercicio 13
+struct astro {
+    bool init;
+    int ganancia;
+};
+
+int astroTrade(vector<vector<astro>> &dp, vector<int> A, int c, int d) {
+    // dp es una matriz de floor(|A| / 2) × |A| (asumiendo que |A| = días)
+
+    // No puedo tener asteroides negativos.
+    // No puedo comprar mas de un asteroide por día
+    // No puedo estar en un día negativo
+    if (c < 0 || c > d || d < 0 || c > A.size() / 2) return -INF;
+    
+    // No puedo tener asteroides el primer dia
+    if (d == 0) return (c == 0 ? 0 : -INF); 
+
+    if (dp[c][d].init) return dp[c][d].ganancia;
+
+    int comprar = astroTrade(dp, A, c - 1, d - 1) - A[d - 1];
+    int vender  = astroTrade(dp, A, c + 1, d - 1) + A[d - 1];
+    int nada    = astroTrade(dp, A, c, d - 1);
+
+    astro result = {true, max({comprar, vender, nada})}; 
+    dp[c][d] = result;
+
+    return result.ganancia;
+}
+
+
+
+// Ejercicio 14
+struct item {
+    int id;
+    int tarda;
+    int expira;
+    int valor;
+};
+ 
+struct solucionFire {
+    int valor;
+    vector<item*> items;
+    bool init;
+};
+ 
+bool itemComparator(const item& a, const item& b) {
+    if (a.expira != b.expira) return a.expira < b.expira;
+    if (a.tarda  != b.tarda ) return a.tarda  < b.tarda;
+    return a.valor > b.valor;
+}
+ 
+solucionFire fire(vector<vector<solucionFire>> &dp, uint64_t n, int t_a, int &d_max, vector<item> &items) {
+ 
+    solucionFire base = {0, {}, true};
+ 
+    if (n >= items.size()) return base;
+    if (t_a > d_max) return base;
+ 
+    if (dp[n][t_a].init) return dp[n][t_a];
+ 
+    // No salvo elemento
+    solucionFire noSalvoElemento = fire(dp, n + 1, t_a, d_max, items);
+    dp[n][t_a] = noSalvoElemento;
+ 
+ 
+    // Salvo elemento.
+    if (t_a <= items[n].expira - items[n].tarda - 1) {
+        solucionFire salvoElemento = fire(dp, n + 1, t_a + items[n].tarda, d_max, items);
+        salvoElemento.init = true;
+        salvoElemento.valor += items[n].valor;
+        salvoElemento.items.push_back(&items[n]);
+ 
+        dp[n][t_a] = (salvoElemento.valor >= noSalvoElemento.valor ? salvoElemento : noSalvoElemento);
+    }
+ 
+    return dp[n][t_a];
 }
