@@ -245,3 +245,41 @@ solucionFire fire(vector<vector<solucionFire>> &dp, uint64_t n, int t_a, int &d_
  
     return dp[n][t_a];
 }
+
+
+// Ejercicio 20
+#define NINIT (-1)
+#define PATO 0
+#define DODO 1
+#define NINGUNO 2
+const int MOD = 100000000;
+
+int caesar(vector<vector<vector<int>>> &dp, const int mp, const int md, int np, int nd, int ut) {
+
+    if ((ut == 1 || ut == 0) && dp[np][nd][ut] != NINIT) return dp[np][nd][ut];
+
+    int soluciones = 0;
+    bool addPatos = (ut == DODO && np > 0) || (ut == NINGUNO);
+    bool addDodos = (ut == PATO && nd > 0) || (ut == NINGUNO);
+
+    if (np + nd == 0) return 1;             // No hay más que hacer. Solución encontrada.
+    if (!addPatos && !addDodos) return 0;   // Quedan tropas pero no las podemos ubicar.
+
+    if (addPatos) {
+        // Agregamos Patos
+        int maxIterPatos = min(np, mp);
+        for (int patoAmount = 1; patoAmount <= maxIterPatos; patoAmount++) {
+            soluciones += caesar(dp, mp, md, np - patoAmount, nd, PATO);
+        }
+    } 
+    if (addDodos) {
+        // Agregamos Dodos
+        int maxIterDodos = min(nd, md);
+        for (int dodoAmount = 1; dodoAmount <= maxIterDodos; dodoAmount++) {
+            soluciones += caesar(dp, mp, md, np, nd - dodoAmount, DODO);
+        }
+    }
+    dp[np][nd][ut] = soluciones % MOD;
+    return dp[np][nd][ut];
+}
+

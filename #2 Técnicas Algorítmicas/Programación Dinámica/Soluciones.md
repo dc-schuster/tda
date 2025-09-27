@@ -548,3 +548,134 @@ solucionFire fire(vector<vector<solucionFire>> &dp, uint64_t n, int t_a, int &d_
     return dp[n][t_a];
 }
 ```
+
+
+# Caesars Legions
+
+| ![ED](https://i.imgur.com/38sF2Yl.png) | ![EU](https://i.imgur.com/DW1m4vx.png) |
+|---|---|
+
+- Tenemos $P$ patos
+- Tenemos $T$ dodos
+- No podemos tener mas de $M_P$ patos consecutivos.
+- No podemos tener mas de $M_D$ dodos consecutivos.
+
+## Inciso A
+
+- Quedan t lugares disponibles.
+- Hay $n_P$ patos y $n_D$ dodos disponibles.
+- Al final de la fila hay $k_P$ patos y $k_D$ dodos formados consecutivamente.
+
+Notemos:
+- Para poner un pato, se debe cumplir: $(t \gt 0) \land (n_P \gt 0) \land (k_P + 1 \le M_P)$
+- Para poner un dodo, se debe cumplir: $(t \gt 0) \land (n_D \gt 0) \land (k_D + 1 \le M_D)$
+
+Queremos calcular cuántas formas hay de ordenar nuestras tropas. Encontramos una forma nueva de ordenar nuestras tropas, cuando la fila fué completada y, en consecuencia, no tenemos ni dodos ni patos disponibles ($t = 0 \land n_D + n_P = 0$). 
+
+No podemos realizar ninguna acción más cuando:
+- No hay más lugar en la fila y no hay ni patos ni dodos por agregar $(t = 0 \land n_D + n_P = 0)$. Esto significa que encontramos una solución, devolvemos 1.
+- No hay dodos disponibles, hay patos disponibles, pero no cumplimos la condición de agregado de patos $(t \gt 0 \land n_D = 0 \land n_P \gt 0 \land k_P + 1 \gt M_P)$. Esto es un fracaso, por lo que al ser una forma inválida de ordenar nuestras tropas, devolvemos 0.
+- No hay patos disponibles, hay dodos disponibles, pero no cumplimos la condición de agregado de dodos $(t \gt 0 \land n_P = 0 \land n_D \gt 0 \land k_D + 1 \gt M_D)$. Esto es un fracaso, por lo que al ser una forma inválida de ordenar nuestras tropas, devolvemos 0.
+
+Pensemos ahora los casos recursivos. En un llamado cualquiera:
+- Si podemos agregar ambos, devolvemos $f(t-1, n_P, n_D - 1, 0, k_P + 1) + f(t-1, n_P - 1, n_D, k_D + 1, 0)$
+- Si podemos agregar un pato pero no un dodo, devolvemos $f(t-1, n_P - 1, n_D, k_D + 1, 0)$
+- Si podemos agregar un dodo pero no un pato, devolvemos $f(t-1, n_P, n_D - 1, 0, k_P + 1)$
+
+*Notemos que si entramos a la segunda o tercera "rama" del caso recursivo, es porque NO podemos agregar ambos, por lo que basta con verificar cuál podemos agregar, luego sabemos que no podemos agregar el otro*.
+
+Definimos entonces:
+$$
+f(t, n_P, n_D, k_P, k_D) =
+\begin{cases}
+1 & (t = 0 \land n_D + n_P = 0) \quad \\
+0 & (t \gt 0 \land n_D = 0 \land n_P \gt 0 \land k_P + 1 \gt M_P) \quad \\
+0 & (t \gt 0 \land n_P = 0 \land n_D \gt 0 \land k_D + 1 \gt M_D) \quad \\
+f(t-1, n_P, n_D - 1, 0, k_P + 1) + f(t-1, n_P - 1, n_D, k_D + 1, 0) & [(t \gt 0) \land (n_P \gt 0) \land (k_P + 1 \le M_P)] \land [(t \gt 0) \land (n_D \gt 0) \land (k_D + 1 \le M_D)] \quad \\
+f(t-1, n_P, n_D - 1, 0, k_P + 1) & (t \gt 0) \land (n_P \gt 0) \land (k_P + 1 \le M_P) \quad \\
+f(t-1, n_P, n_D - 1, 0, k_P + 1) & (t \gt 0) \land (n_D \gt 0) \land (k_D + 1 \le M_D) \quad \\
+\end{cases}
+$$
+
+Luego, para reducir la cantidad de condiciones en cada caso, notemos la siguiente invariante:
+- La cantidad de lugares restantes en la fila, equivale a la suma de patos y dodos disponibles $(t = n_D + n_P)$.
+
+Simplifiquemos las condiciones tomando en cuenta el invariante mencionado.
+
+$$
+f(t, n_P, n_D, k_P, k_D) =
+\begin{cases}
+1 & (t = 0) \quad \\
+0 & (n_D = 0 \land n_P \gt 0 \land k_P + 1 \gt M_P) \quad \\
+0 & (n_P = 0 \land n_D \gt 0 \land k_D + 1 \gt M_D) \quad \\
+f(t-1, n_P, n_D - 1, 0, k_D + 1) + f(t-1, n_P - 1, n_D, 0, k_P + 1) & (n_P \gt 0) \land (k_P + 1 \le M_P) \land (n_D \gt 0) \land (k_D + 1 \le M_D) \quad \\
+f(t-1, n_P - 1, n_D, 0, k_P + 1) & (n_P \gt 0) \land (k_P + 1 \le M_P) \quad \\
+f(t-1, n_P, n_D - 1, 0, k_D + 1) & (n_D \gt 0) \land (k_D + 1 \le M_D) \quad \\
+\end{cases}
+$$
+
+Veamos por qué es válida cada rama recursiva. Sea $S_p$ una secuencia de elecciones para algún llamado recursivo cualquiera, tomamos $S_p = [s_1, \dots, s_j] : 1 \le j \lt t$.
+
+
+## Inciso B
+
+Por el invariante mencionado en el inciso anterior, podemos inferir $t$ con $n_P$ y $n_D$. Por lo que nos podemos deshacer de dicho parámetro.
+
+Sea `PATO: 1` y `DODO: 2`, definimos:
+
+$$
+f(n_P, n_D, k, u_T) =
+\begin{cases}
+1 & (n_P + n_D = 0) \quad \\
+0 & (n_P \gt 0) \land (u_T = \text{PATO}) \land (k + 1 \gt M_P) \quad \\
+0 & (n_D \gt 0) \land (u_T = \text{DODO}) \land (k + 1 \gt M_D) \quad \\ \\
+f(n_P - 1, n_D, 1, \text{PATO}) + f(n_P, n_D - 1, k + 1, \text{DODO}) & (u_T = \text{DODO}) \land (n_D \gt 0) \land (k + 1 \le M_D) \land (n_P \gt 0) \quad \\
+f(n_P, n_D - 1, 1, \text{DODO}) + f(n_P - 1, n_D, k + 1, \text{PATO}) & (u_T = \text{PATO}) \land (n_P \gt 0) \land (k + 1 \le M_P) \land (n_D \gt 0) \quad \\ \\
+f(n_P, n_D - 1, 1, \text{PATO}) & (u_T = DODO) \land (n_P > 0) \quad \\
+f(n_P - 1, n_D, k + 1, \text{PATO}) & (u_T = PATO) \land (n_P > 0) \land (k + 1 \le M_P) \quad \\ \\
+f(n_P, n_D - 1, 1, \text{DODO}) & (u_T = PATO) \land (n_D > 0) \quad \\
+f(n_P, n_D - 1, k + 1, \text{DODO}) & (u_T = DODO) \land (n_D > 0) \land (k + 1 \le M_D) \quad \\
+\end{cases}
+$$
+
+
+## Inciso C
+
+Ahora solamente vamos a recibir la cantidad de patos disponibles, la cantidad de dodos disponibles, y la última tropa. Sabemos que como mucho podemos poner $M_D$ dodos y $M_P$ patos, por lo tanto, en vez de ir agregando de a uno, vamos agregando dodos de a cantidades entre $1$ y $min\{M_D, n_D\}$ y patos de a cantidades entre $1$ y $min\{M_P, n_P\}$.
+
+```cpp
+#define NINIT (-1)
+#define PATO 0
+#define DODO 1
+#define NINGUNO 2
+const int MOD = 100000000;
+
+int caesar(vector<vector<vector<int>>> &dp, const int mp, const int md, int np, int nd, int ut) {
+
+    if ((ut == 1 || ut == 0) && dp[np][nd][ut] != NINIT) return dp[np][nd][ut];
+
+    int soluciones = 0;
+    bool addPatos = (ut == DODO && np > 0) || (ut == NINGUNO);
+    bool addDodos = (ut == PATO && nd > 0) || (ut == NINGUNO);
+
+    if (np + nd == 0) return 1;             // No hay más que hacer. Solución encontrada.
+    if (!addPatos && !addDodos) return 0;   // Quedan tropas pero no las podemos ubicar.
+
+    if (addPatos) {
+        // Agregamos Patos
+        int maxIterPatos = min(np, mp);
+        for (int patoAmount = 1; patoAmount <= maxIterPatos; patoAmount++) {
+            soluciones += caesar(dp, mp, md, np - patoAmount, nd, PATO);
+        }
+    } 
+    if (addDodos) {
+        // Agregamos Dodos
+        int maxIterDodos = min(nd, md);
+        for (int dodoAmount = 1; dodoAmount <= maxIterDodos; dodoAmount++) {
+            soluciones += caesar(dp, mp, md, np, nd - dodoAmount, DODO);
+        }
+    }
+    dp[np][nd][ut] = soluciones % MOD;
+    return dp[np][nd][ut];
+}
+```
