@@ -22,11 +22,11 @@ $$
 Comparar $f(n)$ con $n^{\log_{c}a}$.
 
 - **Caso 1:**
-  Si $f(n) = O(n^{\log_c a - \varepsilon})$ para algún $\varepsilon > 0$,entonces la complejidad es:
+  Si $f(n) = O(n^{(\log_c a) - \varepsilon})$ para algún $\varepsilon > 0$, entonces la complejidad es:
   $T(n) = \Theta(n^{\log_c a})$
 - **Caso 2:**
   Si $f(n) = \Theta(n^{\log_c a})$, entonces la complejidad es:
   $T(n) = \Theta(n^{\log_c a} \cdot \log \ n)$.
 - **Caso 3:**
-  Si $f(n) = \Omega(n^{\log_c a + \varepsilon})$ para algún $\varepsilon > 0$, y además $a \cdot f(\frac{n}{c}) \le k \cdot f(n)$ para algún $k \lt 1$, entonces la complejidad es:
+  Si $f(n) = \Omega(n^{(\log_c a) + \varepsilon})$ para algún $\varepsilon > 0$, y además $a \cdot f(\frac{n}{c}) \le k \cdot f(n)$ para algún $k \lt 1$, entonces la complejidad es:
   $T(n) = \Theta(f(n))$
