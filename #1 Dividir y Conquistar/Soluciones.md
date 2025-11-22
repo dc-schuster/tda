@@ -373,3 +373,64 @@ Matriz4x4 potenciaSum(Matriz4x4 &A, int n) {
 *Más codigo en [algoritmos.cpp](https://github.com/dc-schuster/tda/blob/main/%231%20Dividir%20y%20Conquistar/algoritmos.cpp)*
 
 Se puede también evitar duplicar cálculos de potencias usando la [siguiente estrategia](https://cstheory.stackexchange.com/questions/17617/an-algorithm-to-compute-the-number-of-paths-of-length-at-most-k).
+
+
+# Ejercicio 12 (Cazador De Falsos) (Falta Implementación)
+Tenemos una matriz de $n \times n$, tenemos una operacion *conjuncionSubmatriz* a la que le pasamos $i_0, i_1, j_0, j_1$, y nos dice el valor de conjunción en ese rango de la matriz dada. Queremos calcular la posición de algun *false*.
+
+Tomamos el siguiente ejemplo para explicar la idea:
+
+$$
+\left[
+  \begin{array}{ccc}
+    0 & 1 & 1 & 1 \\
+    1 & 1 & 1 & 1 \\
+    1 & 1 & 1 & 1 \\
+    1 & 1 & 1 & 1
+  \end{array}
+\right]
+$$
+
+Tenemos `n = 4`, definimos `int mid = floor(n / 2) - 1 + start`. Tenemos 4 posibles llamados por hacer:
+- $\text{conjuncionSubmatriz}(i_0 = \text{start}, i_1 = \text{mid}, j_0 = \text{start}, j_1 = \text{mid})$
+- $\text{conjuncionSubmatriz}(i_0 = \text{start}, i_1 = \text{mid}, j_0 = \text{mid}  , j_1 = \text{end})$
+- $\text{conjuncionSubmatriz}(i_0 = \text{mid},   i_1 = \text{end}, j_0 = \text{start}, j_1 = \text{mid})$
+- $\text{conjuncionSubmatriz}(i_0 = \text{mid},   i_1 = \text{end}, j_0 = \text{mid},   j_1 = \text{end})$
+
+Vamos haciendo de a uno, y en el momento que alguna conjunción nos da *false*, paramos de hacer llamados, ya que sabemos que el *false* se encuentra allí. Hacemos la recursion pasando los indices usados en la llamada cuya conjunción dio *false*.
+
+
+# Ejercicio 14 (Diferencia Mínima)
+
+- Tenemos dos arreglos de misma longitud, $A$ y $B$
+- $A$ es creciente
+- $B$ es decreciente. 
+- Para un $0 \le i \lt n$, se define la diferencia entre $A$ y $B$ como $|A[i] - B[i]|$
+
+Queremos encontrar la mínima diferencia. Por ejemplo, el arreglo de diferencias entre $A$ y $B$ es `[5, 2, 1, 3]`, luego la mínima diferencia es `1`.
+
+Como $A$ es creciente y $B$ decreciente, sabemos que el arreglo de diferencias decrece hasta el mínimo, y luego crece. Con esta idea vamos a ver el "estado" del elemento del medio del arreglo. Veremos si a derecha tiene algo más grande, si izquierda tiene algo más chico, y con eso podemos identificar en qué lado de los arreglos se encontrará el mínimo.
+
+## Inciso A
+
+```py
+def dif(A: list[int], B: list[int], i: int):
+    return abs(A[i] - B[i])
+
+def diferenciaMinima(A: list[int], B: list[int]) -> int:
+    if (len(A) == 1):
+        return dif(A, B, 0)
+
+    if (len(A) == 2):
+        return min(dif(A, B, 0), dif(A, B, 1))
+
+    mid = len(A) // 2
+
+    derecha = dif(A, B, mid + 1)
+    medio = dif(A, B, mid)
+
+    if (derecha > medio):
+        return diferenciaMinima(A[:mid + 1], B[:mid + 1])
+    else:
+        return diferenciaMinima(A[mid:], B[mid:])
+```
