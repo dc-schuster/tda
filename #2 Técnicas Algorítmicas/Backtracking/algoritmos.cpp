@@ -364,6 +364,67 @@ vector<signed long long> rutaMinima(vector<vector<uint64_t>> &matriz) {
     return mejorSolucion;
 }
 
+
+// Ejercicio 8 (Cadenas De Adición)
+bool valida(vector<int>) {
+}
+
+bool cadenasDeAdicionOverload(vector<int> &result, vector<int> &current, const vector<int> numeros, const int n, int i) {
+    
+    // Poda por optimalidad
+    if (current.size() >= result.size() && !result.empty()) {
+        return false;
+    }
+
+    // Poda por factibilidad
+    // Para cada paso habría que ir verificando que para cada 2 <= j <=, existe k_1, k_2 tal que x_k_1 + x_k_2 = x_j
+    // Basicamente llamar a valida
+    
+    if (i == numeros.size() - 1) {
+        // Si o si tengo que agregar n (pedimos que numeros sea un arreglo [2, ..., n])
+        current.push_back(n);
+        if (valida(current) && (result.empty() || result.size() > current.size())) {
+            result = current;
+            current.pop_back();
+            return true;
+        } else {
+            current.pop_back();
+            return false;
+        }
+    }
+
+    // Agregamos el siguiente numero
+    current.push_back(numeros[i]);
+    bool agregando = cadenasDeAdicionOverload(result, current, numeros, n, i + 1);
+    current.pop_back();
+
+    // No agregamos el siguiente numero
+    bool noAgregando = cadenasDeAdicionOverload(result, current, numeros, n, i + 1);
+
+    return (agregando || noAgregando);
+}
+
+vector<int> cadenasDeAdicion(int n) {
+    vector<int> numeros;
+    for (int i = 2; i <= n; i++) {
+        numeros.push_back(i);
+    }
+
+    vector<int> result;
+    vector<int> current;
+    current.push_back(1);
+
+    bool possible = cadenasDeAdicionOverload(result, current, numeros, n, 0);
+
+    if (possible) {
+        printf("Hay solución, y es:");
+        printVector(result);
+    } else {
+        printf("No existe solución");
+    }
+}
+
+
 int main() {
     // Ejercicio 1 (Suma Subconjuntos)
     vector<int> C1 = {6,12,6}; int k1 = 12;
