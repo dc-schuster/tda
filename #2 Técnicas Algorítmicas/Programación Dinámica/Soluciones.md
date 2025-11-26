@@ -550,6 +550,31 @@ solucionFire fire(vector<vector<solucionFire>> &dp, uint64_t n, int t_a, int &d_
 ```
 
 
+# Pila Cauta
+
+- Tenemos $N$ cajas numeradas de $1$ a $N$.
+- Queremos apilar la máxima cantidad de cajas.
+- Las cajas de la pila deben estar ordenadas crecientemente por número.
+- La caja $i$ tiene un peso $w_i$ y un soporte $s_i$. Las sumatoria de los pesos de las cajas arriba de la caja $i$, no debe exceder $s_i$.
+
+## Inciso A
+
+Hay dos formas de hacer este ejercicio, la primera es ir construyendo la pila desde abajo hacia arriba, y la otra es construirla de arriba hacia abajo. El problema con el primer enfoque es que cada vez que agregamos una caja, tenemos que ver para cada una de las cajas más abajo, si no nos excedemos del soporte, mientras que si hacemos de arriba hacia abajo, en todo momento tenemos la sumatoria de pesos, y solo vamos a agregar cajas que soporten esa sumatoria de pesos.
+
+Dicho esto, la idea va a ser construir de arriba hacia abajo, y quedarnos con el máximo entre la llamada recursiva que usa la caja actual y la llamada recursiva que no usa la caja actual.
+
+## Inciso B
+
+$$
+pilaCauta(i, w_T) =
+\begin{cases}
+0 & i = -1 \\
+pilaCauta(i - 1, w_T) & s_i < w_T \\
+max\{1 + pilaCauta(i - 1, w_T + w_i), pilaCauta(i - 1, w_T)\} \\
+\end{cases}
+$$
+
+ 
 # Caesars Legions
 
 | ![ED](https://i.imgur.com/38sF2Yl.png) | ![EU](https://i.imgur.com/DW1m4vx.png) |
